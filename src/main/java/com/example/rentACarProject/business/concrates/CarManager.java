@@ -1,93 +1,82 @@
 package com.example.rentACarProject.business.concrates;
 
-import com.example.rentACarProject.business.abstracts.BrandService;
 import com.example.rentACarProject.business.abstracts.CarService;
-import com.example.rentACarProject.business.abstracts.ModelService;
-import com.example.rentACarProject.business.requests.create.CreateCarRequest;
-import com.example.rentACarProject.business.requests.update.UpdateCarRequest;
-import com.example.rentACarProject.business.responses.GetAllCarResponse;
-import com.example.rentACarProject.business.responses.GetByIdCarResponse;
 import com.example.rentACarProject.business.rules.CarBusinessRules;
-import com.example.rentACarProject.core.utilities.mapper.abstracts.ModelMapperService;
-import com.example.rentACarProject.dataAccess.abstracts.CarRepository;
-import com.example.rentACarProject.entities.concrates.Brand;
-import com.example.rentACarProject.entities.concrates.Car;
-import com.example.rentACarProject.entities.concrates.Model;
+import com.example.rentACarProject.core.utility.exceptions.BusinessException;
+import com.example.rentACarProject.core.utility.mapper.CarMapper;
+import com.example.rentACarProject.dto.requests.create.CreateCarRequest;
+import com.example.rentACarProject.dto.requests.update.UpdateCarRequest;
+import com.example.rentACarProject.dto.responses.CarResponse;
+import com.example.rentACarProject.repository.CarRepository;
+import com.example.rentACarProject.entity.Car;
+import com.example.rentACarProject.entity.Model;
+import com.example.rentACarProject.repository.ModelRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @AllArgsConstructor
 public class CarManager implements CarService {
-    private final ModelMapperService modelMapperService;
+
     private final CarRepository carRepository;
-    private final BrandService brandService;
-    private final ModelService modelService;
+    private final ModelRepository modelRepository;
+    private final CarMapper carMapper;
     private final CarBusinessRules carBusinessRules;
 
     @Override
-    public List<GetAllCarResponse> getAll() {
-        List<Car> cars = this.carRepository.findAll();
-        List<GetAllCarResponse> carResponses = new ArrayList<>();
-        for(Car car : cars){
-            Model returnedModel = this.modelService.getModelById(car.getModel().getId());
-            Brand returnedBrand = this.brandService.getBrandById(returnedModel.getBrand().getId());
-            GetAllCarResponse carResponse = this.modelMapperService
-                    .forResponse()
-                    .map(car, GetAllCarResponse.class);
+    public List<CarResponse> getAll() {
 
-            carResponse.setBrandName(returnedBrand.getName());
-            carResponse.setModelName(returnedModel.getName());
-
-            carResponses.add(carResponse);
-        }
-        return carResponses;
+        return carRepository.findAll()
+                .stream()
+                .map(carMapper::toResponse)
+                .toList();
     }
 
     @Override
-    public void add(CreateCarRequest createCarRequest) {
-        this.carBusinessRules.checkIfPlateExist(createCarRequest.getPlate());
-        Model returnedModel = this.modelService.getModelById(createCarRequest.getModelId());
-        Car car = this.modelMapperService.
-                forRequest()
-                .typeMap(CreateCarRequest.class, Car.class)
-                .addMappings(mapper->mapper.skip(Car::setId))
-                .map(createCarRequest);
+    public CarResponse getById(Long id) {
+        Car car = carRepository.findById(id)
+                .orElseThrow(() -> new BusinessException("Car with id " + id + " does not exist"));
 
-        car.setModel(returnedModel);
-
-        this.carRepository.save(car);
+        return carMapper.toResponse(car);
     }
 
     @Override
-    public void update(UpdateCarRequest updateCarRequest) {
-        this.carBusinessRules.checkIfPlateExist(updateCarRequest.getPlate());
-        Model returnedModel = this.modelService.getModelById(updateCarRequest.getModelId());
-        Car car = this.modelMapperService
-                .forRequest()
-                .map(updateCarRequest, Car.class);
+    public CarResponse add(CreateCarRequest request) {
+        carBusinessRules.checkIfPlateExists(request.getPlate().toUpperCase());
+        Model model = modelRepository.findById(request.getModelId())
+                .orElseThrow(() -> new BusinessException("Model with id " + request.getModelId() + " does not exist"));
+        Car car = carMapper.toEntity(request);
+        car.setPlate(request.getPlate().toUpperCase());
+        car.setModel(model);
+        Car saved = carRepository.save(car);
 
-        car.setModel(returnedModel);
-
-        this.carRepository.save(car);
+        return carMapper.toResponse(saved);
     }
 
     @Override
-    public GetByIdCarResponse getById(int id) {
-        this.carBusinessRules.checkIfCarExists(id);
+    public CarResponse update(Long id, UpdateCarRequest request) {
+        carBusinessRules.checkIfPlateExistsForOtherCar(request.getPlate().toUpperCase(), id);
+        Car car = carRepository.findById(id)
+                .orElseThrow(() -> new BusinessException("Car with id " + id + " does not exist"));
+        Model model = modelRepository.findById(request.getModelId())
+                .orElseThrow(() -> new BusinessException("Model with id " + request.getModelId() + " does not exist"));
+        car.setPlate(request.getPlate().toUpperCase());
+        car.setModelYear(request.getModelYear());
+        car.setState(request.getState());
+        car.setDailyPrice(request.getDailyPrice());
+        car.setImagePath(request.getImagePath());
+        car.setModel(model);
+        Car saved = carRepository.save(car);
 
-        Car returnedCar = this.carRepository.findById(id).orElseThrow();
-
-        return this.modelMapperService
-                .forResponse()
-                .map(returnedCar, GetByIdCarResponse.class);
+        return carMapper.toResponse(saved);
     }
 
     @Override
-    public void delete(int id) {
-        this.carRepository.findById(id).ifPresent(this.carRepository::delete);
+    public void delete(Long id) {
+        Car car = carRepository.findById(id)
+                .orElseThrow(() -> new BusinessException("Car with id " + id + " does not exist"));
+        carRepository.delete(car);
     }
 }

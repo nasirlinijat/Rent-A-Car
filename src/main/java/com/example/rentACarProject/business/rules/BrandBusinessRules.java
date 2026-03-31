@@ -1,24 +1,25 @@
 package com.example.rentACarProject.business.rules;
 
-import com.example.rentACarProject.core.utilities.exceptions.BusinessException;
-import com.example.rentACarProject.dataAccess.abstracts.BrandRepository;
+import com.example.rentACarProject.core.utility.exceptions.BusinessException;
+import com.example.rentACarProject.repository.BrandRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 @AllArgsConstructor
-@Service
+@Component
 public class BrandBusinessRules {
+
     private final BrandRepository brandRepository;
 
-    public void checkIfBrandNameExists(String name){
-        if (this.brandRepository.existsByName(name)){
-            throw new BusinessException("Brand name already exists!");
+    public void checkIfBrandNameExists(String name) {
+        if (brandRepository.existsByName(name)) {
+            throw new BusinessException("Brand with name '" + name + "' already exists");
         }
     }
 
-    public void checkIfBrandIdExists(int id){
-        if (!this.brandRepository.existsById(id)){
-            throw new BusinessException("Requested id do not exists!");
+    public void checkIfBrandIdExists(Long id) {
+        if (!brandRepository.existsById(id)) {
+            throw new BusinessException("Brand with id " + id + " does not exist");
         }
     }
 }

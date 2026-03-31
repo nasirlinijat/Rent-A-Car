@@ -1,65 +1,69 @@
 package com.example.rentACarProject.business.concrates;
 
 import com.example.rentACarProject.business.abstracts.CustomerService;
-import com.example.rentACarProject.business.abstracts.RentHistoryService;
-import com.example.rentACarProject.business.requests.create.CreateCustomerRequest;
-import com.example.rentACarProject.business.requests.update.UpdateCustomerRequest;
-import com.example.rentACarProject.business.responses.GetAllCustomerResponse;
-import com.example.rentACarProject.business.responses.GetAllRentHistoryResponse;
-import com.example.rentACarProject.core.utilities.mapper.abstracts.ModelMapperService;
-import com.example.rentACarProject.dataAccess.abstracts.CustomerRepository;
-import com.example.rentACarProject.entities.concrates.Customer;
+import com.example.rentACarProject.business.rules.CustomerBusinessRules;
+import com.example.rentACarProject.core.utility.exceptions.BusinessException;
+import com.example.rentACarProject.core.utility.mapper.CustomerMapper;
+import com.example.rentACarProject.dto.requests.create.CreateCustomerRequest;
+import com.example.rentACarProject.dto.requests.update.UpdateCustomerRequest;
+import com.example.rentACarProject.dto.responses.CustomerResponse;
+import com.example.rentACarProject.repository.CustomerRepository;
+import com.example.rentACarProject.entity.Customer;
 import lombok.AllArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @AllArgsConstructor
 public class CustomerManager implements CustomerService {
-    private final ModelMapperService modelMapperService;
+
     private final CustomerRepository customerRepository;
-    private final RentHistoryService rentHistoryService;
+    private final CustomerMapper customerMapper;
+    private final CustomerBusinessRules customerBusinessRules;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
-    public void add(CreateCustomerRequest createCustomerRequest) {
-        Customer customer = this.modelMapperService
-                .forRequest()
-                .map(createCustomerRequest,Customer.class);
-
-        this.customerRepository.save(customer);
+    public List<CustomerResponse> getAll() {
+        return customerRepository.findAll()
+                .stream()
+                .map(customerMapper::toResponse)
+                .toList();
     }
 
     @Override
-    public List<GetAllCustomerResponse> getAll() {
-        List<Customer> customers = this.customerRepository.findAll();
-        List<GetAllCustomerResponse> customerResponses = new ArrayList<>();
-        for (Customer customer : customers){
-            GetAllCustomerResponse customerResponse = this.modelMapperService.forResponse()
-                    .typeMap(Customer.class, GetAllCustomerResponse.class)
-                    .addMappings(mapper->mapper.skip(GetAllCustomerResponse::setRentHistories))
-                    .map(customer);
-
-            List<GetAllRentHistoryResponse> rentHistoryResponses = this.rentHistoryService.getAllByCustomer(customer);
-            customerResponse.setRentHistories(rentHistoryResponses);
-
-            customerResponses.add(customerResponse);
-        }
-        return customerResponses;
+    public CustomerResponse getById(Long id) {
+        Customer customer = customerRepository.findById(id)
+                .orElseThrow(() -> new BusinessException("Customer with id " + id + " does not exist"));
+        return customerMapper.toResponse(customer);
     }
 
     @Override
-    public void delete(int id) {
-        this.customerRepository.findById(id).ifPresent(this.customerRepository::delete);
+    public CustomerResponse add(CreateCustomerRequest request) {
+        customerBusinessRules.checkIfEmailExists(request.getEmail());
+        Customer customer = customerMapper.toEntity(request);
+        customer.setPassword(passwordEncoder.encode(request.getPassword()));
+        Customer saved = customerRepository.save(customer);
+        return customerMapper.toResponse(saved);
     }
 
     @Override
-    public void update(UpdateCustomerRequest updateCustomerRequest) {
-        Customer customer = this.modelMapperService
-                .forRequest()
-                .map(updateCustomerRequest,Customer.class);
+    public CustomerResponse update(Long id, UpdateCustomerRequest request) {
+        customerBusinessRules.checkIfCustomerExists(id);
+        Customer customer = customerRepository.findById(id)
+                .orElseThrow(() -> new BusinessException("Customer with id " + id + " does not exist"));
+        customer.setName(request.getName());
+        customer.setSurname(request.getSurname());
+        customer.setEmail(request.getEmail());
+        Customer saved = customerRepository.save(customer);
+        return customerMapper.toResponse(saved);
+    }
 
-        this.customerRepository.save(customer);
+    @Override
+    public void delete(Long id) {
+        Customer customer = customerRepository.findById(id)
+                .orElseThrow(() -> new BusinessException("Customer with id " + id + " does not exist"));
+        customerRepository.delete(customer);
     }
 }

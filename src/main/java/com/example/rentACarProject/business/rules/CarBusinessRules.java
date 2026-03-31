@@ -1,24 +1,31 @@
 package com.example.rentACarProject.business.rules;
 
-import com.example.rentACarProject.core.utilities.exceptions.BusinessException;
-import com.example.rentACarProject.dataAccess.abstracts.CarRepository;
+import com.example.rentACarProject.core.utility.exceptions.BusinessException;
+import com.example.rentACarProject.repository.CarRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 @AllArgsConstructor
-@Service
+@Component
 public class CarBusinessRules {
+
     private final CarRepository carRepository;
 
-    public void checkIfPlateExist(String plate) {
-        if (this.carRepository.existsByPlate(plate.toUpperCase())) {
-            throw new BusinessException("Car plate already exists!");
+    public void checkIfPlateExists(String plate) {
+        if (carRepository.existsByPlate(plate)) {
+            throw new BusinessException("Car with plate '" + plate + "' already exists");
         }
     }
 
-    public void checkIfCarExists(int id) {
-        if (!this.carRepository.existsById(id)) {
-            throw new BusinessException("Requested id do not exists!");
+    public void checkIfPlateExistsForOtherCar(String plate, Long id) {
+        if (carRepository.existsByPlateAndIdNot(plate, id)) {
+            throw new BusinessException("Car with plate '" + plate + "' already exists");
+        }
+    }
+
+    public void checkIfCarExists(Long id) {
+        if (!carRepository.existsById(id)) {
+            throw new BusinessException("Car with id " + id + " does not exist");
         }
     }
 }
