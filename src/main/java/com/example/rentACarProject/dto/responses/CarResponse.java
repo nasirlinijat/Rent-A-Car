@@ -8,7 +8,10 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
-@Data @Builder @AllArgsConstructor @NoArgsConstructor
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class CarResponse {
     private Long id;
     private String plate;
@@ -17,6 +20,6 @@ public class CarResponse {
     private BigDecimal dailyPrice;
     private String imagePath;
     private Long modelId;
-    private String modelName;  // denormalized for convenience
-    private String brandName;  // denormalized for convenience
+    private String modelName;
+    private String brandName;
 }

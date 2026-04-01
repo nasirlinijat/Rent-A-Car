@@ -34,5 +34,5 @@ public class UpdateCarRequest {
     @NotNull(message = "Model cannot be null")
     private Long modelId;
 
-    private String imagePath; // optional
+    private String imagePath;
 }

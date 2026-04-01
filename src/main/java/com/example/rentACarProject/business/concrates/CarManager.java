@@ -62,6 +62,7 @@ public class CarManager implements CarService {
                 .orElseThrow(() -> new BusinessException("Car with id " + id + " does not exist"));
         Model model = modelRepository.findById(request.getModelId())
                 .orElseThrow(() -> new BusinessException("Model with id " + request.getModelId() + " does not exist"));
+
         car.setPlate(request.getPlate().toUpperCase());
         car.setModelYear(request.getModelYear());
         car.setState(request.getState());

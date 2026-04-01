@@ -27,6 +27,7 @@ public class ModelManager implements ModelService {
 
     @Override
     public List<ModelResponse> getAll() {
+
         return modelRepository.findAll()
                 .stream()
                 .map(modelEntityMapper::toResponse)
@@ -37,6 +38,7 @@ public class ModelManager implements ModelService {
     public ModelResponse getById(Long id) {
         Model model = modelRepository.findById(id)
                 .orElseThrow(() -> new BusinessException("Model with id " + id + " does not exist"));
+
         return modelEntityMapper.toResponse(model);
     }
 
@@ -48,6 +50,7 @@ public class ModelManager implements ModelService {
         Model model = modelEntityMapper.toEntity(request);
         model.setBrand(brand);
         Model saved = modelRepository.save(model);
+
         return modelEntityMapper.toResponse(saved);
     }
 
@@ -61,6 +64,7 @@ public class ModelManager implements ModelService {
         model.setName(request.getName());
         model.setBrand(brand);
         Model saved = modelRepository.save(model);
+
         return modelEntityMapper.toResponse(saved);
     }
 

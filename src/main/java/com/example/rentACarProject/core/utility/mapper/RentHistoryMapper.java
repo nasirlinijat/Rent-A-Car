@@ -9,9 +9,10 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface RentHistoryMapper {
 
-    @Mapping(source = "customer.name", target = "customerName")
-    @Mapping(source = "customer.surname", target = "customerSurname")
+    @Mapping(source = "car.id", target = "carId")
     @Mapping(source = "car.plate", target = "plate")
+    @Mapping(source = "customer.id", target = "customerId")
+    @Mapping(target = "customerFullName", expression = "java(rentHistory.getCustomer().getName() + \" \" + rentHistory.getCustomer().getSurname())")
     RentHistoryResponse toResponse(RentHistory rentHistory);
 
     RentHistory toEntity(CreateRentHistoryRequest request);

@@ -9,8 +9,10 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@Data @Builder
-@AllArgsConstructor @NoArgsConstructor
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class RentHistoryResponse {
     private Long id;
     private LocalDate rentalStartDate;
@@ -22,5 +24,5 @@ public class RentHistoryResponse {
     private Long carId;
     private String plate;
     private Long customerId;
-    private String customerName;
+    private String customerFullName;
 }

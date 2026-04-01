@@ -5,6 +5,7 @@ import com.example.rentACarProject.business.rules.RentHistoryBusinessRules;
 import com.example.rentACarProject.core.utility.exceptions.BusinessException;
 import com.example.rentACarProject.core.utility.mapper.RentHistoryMapper;
 import com.example.rentACarProject.dto.requests.create.CreateRentHistoryRequest;
+import com.example.rentACarProject.dto.requests.update.UpdateRentHistoryRequest;
 import com.example.rentACarProject.dto.responses.RentHistoryResponse;
 import com.example.rentACarProject.entity.RentStatus;
 import com.example.rentACarProject.repository.CarRepository;
@@ -91,5 +92,16 @@ public class RentHistoryManager implements RentHistoryService {
         RentHistory rentHistory = rentHistoryRepository.findById(id)
                 .orElseThrow(() -> new BusinessException("RentHistory with id " + id + " does not exist"));
         rentHistoryRepository.delete(rentHistory);
+    }
+
+    @Override
+    public RentHistoryResponse update(Long id, UpdateRentHistoryRequest request) {
+        RentHistory rentHistory = rentHistoryRepository.findById(id)
+                .orElseThrow(() -> new BusinessException("RentHistory with id " + id + " does not exist"));
+
+        rentHistory.setStatus(request.getStatus());
+        RentHistory saved = rentHistoryRepository.save(rentHistory);
+
+        return rentHistoryMapper.toResponse(saved);
     }
 }

@@ -13,7 +13,7 @@ import java.time.LocalDate;
 @ToString(exclude = {"car", "customer"})
 @EqualsAndHashCode(exclude = {"car", "customer"})
 @Entity
-@Table(name = "rent_history")
+@Table(name = "rent_histories")
 public class RentHistory {
 
     @Id
