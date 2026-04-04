@@ -23,6 +23,6 @@ public class RentHistoryResponse {
     private String returnLocation;
     private Long carId;
     private String plate;
-    private Long customerId;
-    private String customerFullName;
+    private Long userId;
+    private String userFullName;
 }

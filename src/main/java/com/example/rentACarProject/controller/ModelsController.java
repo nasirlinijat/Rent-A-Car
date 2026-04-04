@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,17 +16,20 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/models")
 @AllArgsConstructor
+@PreAuthorize("hasRole('ADMIN')")
 public class ModelsController {
 
     private final ModelService modelService;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
     public ResponseEntity<List<ModelResponse>> getAll() {
 
         return ResponseEntity.ok(modelService.getAll());
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
     public ResponseEntity<ModelResponse> getById(@PathVariable Long id) {
 
         return ResponseEntity.ok(modelService.getById(id));

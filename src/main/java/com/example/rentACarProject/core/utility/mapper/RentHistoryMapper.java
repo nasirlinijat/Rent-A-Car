@@ -11,8 +11,8 @@ public interface RentHistoryMapper {
 
     @Mapping(source = "car.id", target = "carId")
     @Mapping(source = "car.plate", target = "plate")
-    @Mapping(source = "customer.id", target = "customerId")
-    @Mapping(target = "customerFullName", expression = "java(rentHistory.getCustomer().getName() + \" \" + rentHistory.getCustomer().getSurname())")
+    @Mapping(source = "user.id", target = "userId")
+    @Mapping(target = "userFullName", expression = "java(rentHistory.getUser().getName() + \" \" + rentHistory.getUser().getSurname())")
     RentHistoryResponse toResponse(RentHistory rentHistory);
 
     RentHistory toEntity(CreateRentHistoryRequest request);

@@ -9,10 +9,10 @@ import com.example.rentACarProject.dto.requests.update.UpdateRentHistoryRequest;
 import com.example.rentACarProject.dto.responses.RentHistoryResponse;
 import com.example.rentACarProject.entity.RentStatus;
 import com.example.rentACarProject.repository.CarRepository;
-import com.example.rentACarProject.repository.CustomerRepository;
+import com.example.rentACarProject.repository.UserRepository;
 import com.example.rentACarProject.repository.RentHistoryRepository;
 import com.example.rentACarProject.entity.Car;
-import com.example.rentACarProject.entity.Customer;
+import com.example.rentACarProject.entity.User;
 import com.example.rentACarProject.entity.RentHistory;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,7 +26,7 @@ import java.util.List;
 public class RentHistoryManager implements RentHistoryService {
 
     private final RentHistoryRepository rentHistoryRepository;
-    private final CustomerRepository customerRepository;
+    private final UserRepository userRepository;
     private final CarRepository carRepository;
     private final RentHistoryMapper rentHistoryMapper;
     private final RentHistoryBusinessRules rentHistoryBusinessRules;
@@ -47,8 +47,15 @@ public class RentHistoryManager implements RentHistoryService {
     }
 
     @Override
+    public List<RentHistoryResponse> getAllByUserId(Long userId) {
+        return rentHistoryRepository.findAllByUserId(userId).stream()
+                .map(rentHistoryMapper::toResponse)
+                .toList();
+    }
+
+    @Override
     public List<RentHistoryResponse> getAllByCustomerId(Long customerId) {
-        return rentHistoryRepository.findAllByCustomerId(customerId)
+        return rentHistoryRepository.findAllByUserId(customerId)
                 .stream()
                 .map(rentHistoryMapper::toResponse)
                 .toList();
@@ -70,15 +77,15 @@ public class RentHistoryManager implements RentHistoryService {
 
         Car car = carRepository.findById(request.getCarId())
                 .orElseThrow(() -> new BusinessException("Car with id " + request.getCarId() + " does not exist"));
-        Customer customer = customerRepository.findById(request.getCustomerId())
-                .orElseThrow(() -> new BusinessException("Customer with id " + request.getCustomerId() + " does not exist"));
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new BusinessException("User with id " + request.getUserId() + " does not exist"));
 
         long days = ChronoUnit.DAYS.between(request.getRentalStartDate(), request.getRentalEndDate());
         BigDecimal totalCost = car.getDailyPrice().multiply(BigDecimal.valueOf(days));
 
         RentHistory rentHistory = rentHistoryMapper.toEntity(request);
         rentHistory.setCar(car);
-        rentHistory.setCustomer(customer);
+        rentHistory.setUser(user);
         rentHistory.setTotalCost(totalCost);
         rentHistory.setStatus(RentStatus.PENDING);
 

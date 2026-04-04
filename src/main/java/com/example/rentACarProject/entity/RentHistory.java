@@ -10,8 +10,8 @@ import java.time.LocalDate;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(exclude = {"car", "customer"})
-@EqualsAndHashCode(exclude = {"car", "customer"})
+@ToString(exclude = {"car", "user"})
+@EqualsAndHashCode(exclude = {"car", "user"})
 @Entity
 @Table(name = "rent_histories")
 public class RentHistory {
@@ -44,6 +44,6 @@ public class RentHistory {
     private Car car;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "customer_id", nullable = false)
-    private Customer customer;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 }

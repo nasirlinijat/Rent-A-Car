@@ -33,6 +33,6 @@ public class CreateRentHistoryRequest {
     @NotNull(message = "Car id cannot be null")
     private Long carId;
 
-    @NotNull(message = "Customer id cannot be null")
-    private Long customerId;
+    @NotNull(message = "User id cannot be null")
+    private Long userId;
 }

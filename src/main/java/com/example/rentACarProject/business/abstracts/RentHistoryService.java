@@ -12,6 +12,8 @@ public interface RentHistoryService {
 
     RentHistoryResponse getById(Long id);
 
+    List<RentHistoryResponse> getAllByUserId(Long userId);
+
     List<RentHistoryResponse> getAllByCustomerId(Long customerId);
 
     List<RentHistoryResponse> getAllByCarId(Long carId);
